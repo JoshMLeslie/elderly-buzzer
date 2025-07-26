@@ -1,6 +1,12 @@
 [package]
-name = "elderly buzzer"
+name = "elderly_buzzer"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+esp-idf-hal = "0.42"
+esp-idf-sys = { version = "0.33", features = ["binstart"] }
+anyhow = "1.0"
+
+[build-dependencies]
+embuild = "0.31"
