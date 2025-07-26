@@ -10,15 +10,8 @@ source ~/.cargo/env
 
 # Install ESP32 Rust toolchain
 cargo install espup
-## May need to downgrade to 0.12.2
-cargo install espup --version 0.12.2
-## then
 espup install
-## May need to target esp32 specifically
-espup update --targets esp32
-## then
-echo '. /home/josh/export-esp.sh' >> ~/.bashrc
-source ~/export-esp.sh
+source ~/export-esp.sh  # or add to your shell profile
 
 # Install cargo-espflash for uploading
 cargo install cargo-espflash
@@ -45,9 +38,103 @@ embuild = "0.31"
 ## Upload Process
 
 ### 1. Connect Hardware
-- Connect ESP32 to computer via USB cable
-- Ensure proper driver installation (CP210x or CH340)
-- Note the COM port (Windows) or device path (Linux/Mac)
+
+#### Physical Connection
+- Use a **USB-A to Micro-USB** cable (most ESP32 boards)
+- Connect Micro-USB end to ESP32 development board
+- Connect USB-A end to computer USB port
+- ESP32 power LED should illuminate when connected
+
+#### Driver Installation
+
+**Windows:**
+```bash
+# Check Device Manager for "Unknown Device" or "USB Serial"
+# Download and install appropriate driver:
+
+# For CP2102/CP210x chips (most common):
+# Download from: https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers
+# Install CP210x Universal Windows Driver
+
+# For CH340/CH341 chips:
+# Download from: http://www.wch-ic.com/downloads/CH341SER_EXE.html
+# Install CH341 Windows driver
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+# CP210x drivers (usually built-in)
+sudo modprobe cp210x
+lsmod | grep cp210x  # Verify loaded
+
+# CH340 drivers (usually built-in)
+sudo modprobe ch341
+lsmod | grep ch341   # Verify loaded
+
+# If not working, install manually:
+sudo apt update
+sudo apt install linux-modules-extra-$(uname -r)
+```
+
+**macOS:**
+```bash
+# CP210x: Download from Silicon Labs website (link above)
+# CH340: Install using Homebrew
+brew install --cask wch-ch34x-usb-serial-driver
+
+# Or download from: https://github.com/adrianmihalko/ch340g-ch34g-ch34x-mac-os-x-driver
+```
+
+#### Identifying Your COM Port
+
+**Windows:**
+1. Open **Device Manager** (Windows key + X, select Device Manager)
+2. Expand **Ports (COM & LPT)**
+3. Look for entries like:
+   - "Silicon Labs CP210x USB to UART Bridge (COM3)"
+   - "USB-SERIAL CH340 (COM4)"
+4. Note the COM number (e.g., COM3, COM4)
+
+**Linux:**
+```bash
+# List all USB serial devices
+ls /dev/ttyUSB* /dev/ttyACM*
+
+# Or use dmesg to see recent connections
+dmesg | grep tty
+
+# Common device names:
+# /dev/ttyUSB0  (CP210x, CH340)
+# /dev/ttyACM0  (native USB)
+```
+
+**macOS:**
+```bash
+# List serial devices
+ls /dev/cu.*
+
+# Look for entries like:
+# /dev/cu.SLAB_USBtoUART  (CP210x)
+# /dev/cu.wchusbserial*   (CH340)
+# /dev/cu.usbserial-*     (generic)
+```
+
+#### Verification Steps
+1. **Before connecting**: Note existing COM ports/devices
+2. **After connecting**: Check for new port/device
+3. **Test connection**: 
+   ```bash
+   # Linux/Mac - should show device info
+   udevadm info --name=/dev/ttyUSB0
+   
+   # Windows - in Device Manager, right-click port → Properties
+   ```
+
+#### Troubleshooting Connection Issues
+- **No new port appears**: Driver issue or faulty cable
+- **Port appears then disappears**: Power supply issue or loose connection
+- **Permission denied**: Add user to dialout group (Linux) or run as administrator (Windows)
+- **Multiple ports**: Disconnect other USB serial devices to identify correct one
 
 ### 2. Build and Flash
 ```bash
