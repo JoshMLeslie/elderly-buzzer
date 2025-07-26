@@ -10,8 +10,15 @@ source ~/.cargo/env
 
 # Install ESP32 Rust toolchain
 cargo install espup
+## May need to downgrade to 0.12.2
+cargo install espup --version 0.12.2
+## then
 espup install
-source ~/export-esp.sh  # or add to your shell profile
+## May need to target esp32 specifically
+espup update --targets esp32
+## then
+echo '. /home/josh/export-esp.sh' >> ~/.bashrc
+source ~/export-esp.sh
 
 # Install cargo-espflash for uploading
 cargo install cargo-espflash
